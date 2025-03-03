@@ -12,6 +12,14 @@ import torch.nn.utils.spectral_norm as spectral_norm
 
 from ldm.modules.diffusionmodules.util import normalization
 
+def zero_module(module):
+    """
+    Zero out the parameters of a module and return it.
+    """
+    for p in module.parameters():
+        p.detach().zero_()
+    return module
+
 
 # Returns a function that creates a normalization function
 # that does not condition on semantic map
@@ -84,11 +92,14 @@ class SPADE(nn.Module):
             nn.Conv2d(label_nc, nhidden, kernel_size=ks, padding=pw),
             nn.ReLU()
         )
-        self.mlp_gamma = nn.Conv2d(nhidden, norm_nc, kernel_size=ks, padding=pw)
-        self.mlp_beta = nn.Conv2d(nhidden, norm_nc, kernel_size=ks, padding=pw)
+        self.mlp_gamma = zero_module(nn.Conv2d(nhidden, norm_nc, kernel_size=ks, padding=pw))
+        self.mlp_beta = zero_module(nn.Conv2d(nhidden, norm_nc, kernel_size=ks, padding=pw))
+        
 
     def forward(self, x_dic, segmap_dic, size=None):
 
+        
+#         print(type(segmap_dic), "Segmap dic")
         if size is None:
             segmap = segmap_dic[str(x_dic.size(-1))]
             x = x_dic
@@ -104,8 +115,12 @@ class SPADE(nn.Module):
         actv = self.mlp_shared(segmap)
         gamma = self.mlp_gamma(actv)
         beta = self.mlp_beta(actv)
-
+        
+#         print("applying SFT")
+#         print(gamma.shape, beta.shape, "gamma", "beta")
+#
         # apply scale and bias
-        out = normalized * (1 + gamma) + beta
+#         out = normalized * (1 + gamma) + beta
+        out = x * ( 1 + gamma) + beta
 
         return out

@@ -281,12 +281,15 @@ class DDIMSampler(object):
                 sc_in = torch.cat([sc] * 2)
             y_in = None
             if y is not None:
-                y_in = torch.cat([y] * 2)
-            
+                y_in = torch.cat([y] * 2)  
+                
                 
             # e_t_uncond, e_t = self.model.apply_model(x_in, t_in, c_in, sc = sc_in).chunk(2)  #####for only prompt conditioning
-            e_t_uncond, e_t = self.model.apply_model(x_in, t_in, new_c, sc = sc_in, y = y_in, key = key).chunk(2)
+#             e_t_uncond, e_t = self.model.apply_model(x_in, t_in, new_c, sc = sc_in, y = y_in, key = key).chunk(2) #####with SC
 
+            struct_cond = self.model.structcond_stage_model(x_in, t_in, new_c)
+#             print(type(struct_cond), 'structcond')
+            e_t_uncond, e_t = self.model.apply_model(x_in, t_in, new_c, struct_cond).chunk(2) ####without SC
             e_t = e_t_uncond + unconditional_guidance_scale * (e_t - e_t_uncond)
             
             ###########################################################################################

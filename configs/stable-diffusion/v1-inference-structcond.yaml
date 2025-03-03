@@ -1,6 +1,6 @@
 model:
   base_learning_rate: 1.0e-04
-  target: ldm.models.diffusion.ddpm.LatentDiffusion
+  target: ldm.models.diffusion.ddpm.LatentDiffusionSRTextWT
   params:
     linear_start: 0.00085
     linear_end: 0.0120
@@ -28,8 +28,8 @@ model:
         f_min: [ 1. ]
 
     unet_config:
-      target: ldm.modules.diffusionmodules.openaimodel.UNetModel
-#       target: ldm.modules.diffusionmodules.openaimodel.UNetModelDualcondV2
+#       target: ldm.modules.diffusionmodules.openaimodel.UNetModel
+      target: ldm.modules.diffusionmodules.openaimodel.UNetModelDualcondV2
       params:
         image_size: 32 # unused
         in_channels: 4
@@ -44,7 +44,7 @@ model:
         context_dim: 768
         use_checkpoint: True
         legacy: False
-#         semb_channels: 256 ###Stable-SR add-on
+        semb_channels: 256 ###Stable-SR add-on
 #         semb_channels: 64
         
 
@@ -73,3 +73,50 @@ model:
 
     cond_stage_config:
       target: ldm.modules.encoders.modules.FrozenCLIPEmbedder
+      
+    structcond_stage_config:
+      target: ldm.modules.diffusionmodules.openaimodel.EncoderUNetModelOrig
+      params:
+        image_size: 96
+        in_channels: 4
+#         model_channels: 256
+        model_channels: 320
+        out_channels: 256
+        num_res_blocks: 2
+        attention_resolutions: [ 4, 2, 1 ]
+        dropout: 0
+#         channel_mult: [ 1, 1, 2, 2 ]
+        channel_mult: [1,2,4,4]
+        conv_resample: True
+        dims: 2
+        use_checkpoint: False
+        use_fp16: False
+        num_heads: 8
+        use_spatial_transformer: True
+        transformer_depth: 1
+        context_dim: 768
+        legacy: False
+        
+#     structcond_stage_config:
+#       target: ldm.modules.diffusionmodules.openaimodel.EncoderUNetModelWT
+#       params:
+#         image_size: 96
+#         in_channels: 4
+# #         model_channels: 256
+#         model_channels: 320
+#         out_channels: 256
+#         num_res_blocks: 2
+#         attention_resolutions: [ 4, 2, 1 ]
+#         dropout: 0
+# #         channel_mult: [ 1, 1, 2, 2 ]
+#         channel_mult: [1,2,4,4]
+#         conv_resample: True
+#         dims: 2
+#         use_checkpoint: False
+#         use_fp16: False
+#         num_heads: 4
+#         num_head_channels: -1
+#         num_heads_upsample: -1
+#         use_scale_shift_norm: False
+#         resblock_updown: False
+#         use_new_attention_order: False
